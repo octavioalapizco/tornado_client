@@ -21,11 +21,10 @@ class Client
     const ERROR_CODE_RESERVED_SEAT = '00016';
 
     const ENDPOINT_SCHEDULE = '/public/ApiFriendly/getTravels';
-    const ENDPOINT_BOOKING = '/WSCCVE2/confirmacionVenta';
-    const ENDPOINT_SEAT_RESERVATION = '/WSCCVE/confirmacionReservacion';
-    const ENDPOINT_SEAT_BLOCK = '/WSCBAS/bloqueaAsiento';
-    const ENDPOINT_SEAT_UNBLOCK = '/WSCLAS/desbloqueaAsientos';
-    const ENDPOINT_SEAT_AVAILABILITY = '/WSCDISA/disponibilidadAsientos';
+    const ENDPOINT_BOOKING = '/public/ApiFriendly/completeExternalPurchase';
+    const ENDPOINT_SEAT_BLOCK = '/public/ApiFriendly/selectSeat';
+    const ENDPOINT_SEAT_UNBLOCK = '/public/ApiFriendly/selectSeat';
+    const ENDPOINT_SEAT_AVAILABILITY = '/public/ApiFriendly/getBus';
     const ENDPOINT_ORIGIN_PLACES = '/public/ApiFriendly/getDepartures';
     const ENDPOINT_DESTINATION_PLACES = '/public/ApiFriendly/getArrivals';
 
@@ -98,6 +97,59 @@ class Client
         }
     }
 
+    /**
+     * @param GetTravelsRequest $travel
+     * @return array<Travel>
+     * @throws InvalidArgumentException
+     */
+    public function getTravels(GetTravelsRequest $travelsRequest)
+    {
+        // ValidatorHelper::validate($travelsRequest, 'arrival');
+        $response = $this->request(
+            self::ENDPOINT_SCHEDULE,
+            [
+                'U_NAME'  => $this->config->getUserName(),
+                'U_PASSWORD'  => $this->config->getPassword(),
+                'CID' => $travelsRequest->getCid(),
+                'ID_DEPARTURE'   => $travelsRequest->getIdDeparture(),
+                'ID_ARRIVAL'=>$travelsRequest->getIdArrival(),
+                'DATE_DEPARTURE'=>$travelsRequest->getDateDeparture()->format('Y-m-d') ,
+                'TYPE_WAY'=>$travelsRequest->getTypeWay(),
+                'DATE_RETURN'=>''
+            ]
+        );
+        return $response;
+    }
+
+    public function getDepartures($cid)
+    {
+        // ValidatorHelper::validate($travelsRequest, 'arrival');
+        $response = $this->request(
+            self::ENDPOINT_ORIGIN_PLACES,
+            [
+                'U_NAME'  => $this->config->getUserName(),
+                'U_PASSWORD'  => $this->config->getPassword(),
+                'CID' => $cid
+            ]
+        );
+        return $response;
+    }
+
+    public function getDestinations($cid, $departureId)
+    {
+        // ValidatorHelper::validate($travelsRequest, 'arrival');
+        $response = $this->request(
+            self::ENDPOINT_DESTINATION_PLACES,
+            [
+                'U_NAME'  => $this->config->getUserName(),
+                'U_PASSWORD'  => $this->config->getPassword(),
+                'CID' => $cid,
+                'ID_DEPARTURE' => $departureId
+            ]
+        );
+        return $response;
+    }
+    
     /*
      |-------------------------------------------------------------------------
      | Getters and Setters
@@ -166,58 +218,5 @@ class Client
     public function getLastRequest()
     {
         return $this->lastRequest;
-    }
-
-    /**
-     * @param GetTravelsRequest $travel
-     * @return array<Travel>
-     * @throws InvalidArgumentException
-     */
-    public function getTravels(GetTravelsRequest $travelsRequest)
-    {
-       // ValidatorHelper::validate($travelsRequest, 'arrival');
-        $response = $this->request(
-            self::ENDPOINT_SCHEDULE,
-            [
-                'U_NAME'  => $this->config->getUserName(),
-                'U_PASSWORD'  => $this->config->getPassword(),
-                'CID' => $travelsRequest->getCid(),
-                'ID_DEPARTURE'   => $travelsRequest->getIdDeparture(),
-                'ID_ARRIVAL'=>$travelsRequest->getIdArrival(),
-                'DATE_DEPARTURE'=>$travelsRequest->getDateDeparture()->format('Y-m-d') ,
-                'TYPE_WAY'=>$travelsRequest->getTypeWay(),
-                'DATE_RETURN'=>''
-            ]
-        );
-        return $response;
-    }
-
-    public function getDepartures($cid)
-    {
-        // ValidatorHelper::validate($travelsRequest, 'arrival');
-        $response = $this->request(
-            self::ENDPOINT_ORIGIN_PLACES,
-            [
-                'U_NAME'  => $this->config->getUserName(),
-                'U_PASSWORD'  => $this->config->getPassword(),
-                'CID' => $cid
-            ]
-        );
-        return $response;
-    }
-
-    public function getDestinations($cid, $departureId)
-    {
-        // ValidatorHelper::validate($travelsRequest, 'arrival');
-        $response = $this->request(
-            self::ENDPOINT_DESTINATION_PLACES,
-            [
-                'U_NAME'  => $this->config->getUserName(),
-                'U_PASSWORD'  => $this->config->getPassword(),
-                'CID' => $cid,
-                'ID_DEPARTURE' => $departureId
-            ]
-        );
-        return $response;
     }
 }
