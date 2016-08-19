@@ -5,8 +5,9 @@ namespace RocketBus\Tornado;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ConnectException;
 use Mockery\CountValidator\Exception;
+use RocketBus\Tornado\Type\BusRequest;
 use RocketBus\Tornado\Type\Config;
-use RocketBus\Tornado\Type\GetTravelsRequest;
+use RocketBus\Tornado\Type\TravelsRequest;
 
 /**
  * Class Client
@@ -98,11 +99,11 @@ class Client
     }
 
     /**
-     * @param GetTravelsRequest $travel
+     * @param TravelsRequest $travel
      * @return array<Travel>
      * @throws InvalidArgumentException
      */
-    public function getTravels(GetTravelsRequest $travelsRequest)
+    public function getTravels(TravelsRequest $travelsRequest)
     {
         // ValidatorHelper::validate($travelsRequest, 'arrival');
         $response = $this->request(
@@ -149,7 +150,24 @@ class Client
         );
         return $response;
     }
-    
+
+    public function getBus(BusRequest $request){
+        // ValidatorHelper::validate($travelsRequest, 'arrival');
+        $response = $this->request(
+            self::ENDPOINT_SEAT_AVAILABILITY,
+            [
+                'U_NAME'  => $this->config->getUserName(),
+                'U_PASSWORD'  => $this->config->getPassword(),
+                'CID' => $request->getCid(),
+                'ID_DEPARTURE'   => $request->getIdDeparture(),
+                'ID_ARRIVAL'=>$request->getIdArrival(),
+                'ID_TRAVEL' =>$request->getTravelId(),
+                'TYPE_WAY'=>$request->getTypeWay(),
+            ]
+        );
+        return $response;
+    }
+
     /*
      |-------------------------------------------------------------------------
      | Getters and Setters

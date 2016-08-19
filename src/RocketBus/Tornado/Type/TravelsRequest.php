@@ -9,7 +9,7 @@
 namespace RocketBus\Tornado\Type;
 
 
-class GetTravelsRequest
+class TravelsRequest
 {
     private  $id_departure;
     private  $id_arrival;
