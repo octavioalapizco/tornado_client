@@ -4,7 +4,10 @@ namespace RocketBus\Tornado;
 
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ConnectException;
+use Illuminate\Support\Collection;
 use Mockery\CountValidator\Exception;
+
+use RocketBus\Tornado\Type\TicketType;
 use RocketBus\Tornado\Type\BusRequest;
 use RocketBus\Tornado\Type\Config;
 use RocketBus\Tornado\Type\TravelsRequest;
@@ -28,7 +31,7 @@ class Client
     const ENDPOINT_SEAT_AVAILABILITY = '/public/ApiFriendly/getBus';
     const ENDPOINT_ORIGIN_PLACES = '/public/ApiFriendly/getDepartures';
     const ENDPOINT_DESTINATION_PLACES = '/public/ApiFriendly/getArrivals';
-
+    const ENDPOINT_GET_TICKET_TYPES = '/public/ApiFriendly/getListTicketType';
     const FORMAT_DATE = 'Y-m-d';
     const FORMAT_HOUR = 'H:i:s';
     const AT_LEAST_ONE_SEAT = 1;
@@ -151,7 +154,8 @@ class Client
         return $response;
     }
 
-    public function getBus(BusRequest $request){
+    public function getBus(BusRequest $request)
+    {
         // ValidatorHelper::validate($travelsRequest, 'arrival');
         $response = $this->request(
             self::ENDPOINT_SEAT_AVAILABILITY,
@@ -166,6 +170,35 @@ class Client
             ]
         );
         return $response;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getTicketTypes($cid)
+    {
+        $tickets = $this->request(
+            self::ENDPOINT_GET_TICKET_TYPES,
+            [
+                'U_NAME'  => $this->config->getUserName(),
+                'U_PASSWORD'  => $this->config->getPassword(),
+                'CID'=> $cid
+            ]
+        );
+
+        $ticketTypes = Collection::make($tickets)
+            ->map(function ($rawTicketType) {
+
+                $ticketType = new TicketType();
+                $ticketType->setId(intval($rawTicketType['id']));
+                $ticketType->setLabel($rawTicketType['value']);
+                $ticketType->setDiscount(floatval($rawTicketType['discount']));
+                $ticketType->setDiscountType('P');
+
+                return $ticketType;
+            });
+
+        return $ticketTypes;
     }
 
     /*
