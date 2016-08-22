@@ -192,7 +192,7 @@ class Client
                 $ticketType->setId(intval($rawTicketType['id']));
                 $ticketType->setLabel($rawTicketType['value']);
                 $ticketType->setDiscount(floatval($rawTicketType['discount']));
-                $ticketType->setDiscountType('P'); 
+                $ticketType->setDiscountType('P');
                 return $ticketType;
             });
 
